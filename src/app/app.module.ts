@@ -13,7 +13,7 @@ import { NodeItemComponent } from './node-item/node-item.component';
     AppComponent,
     BarComponent,
     TreeNodeComponent,
-    NodeItemComponent
+    NodeItemComponent,
   ],
   imports: [
     BrowserModule,

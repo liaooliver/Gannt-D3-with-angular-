@@ -107,10 +107,14 @@ export class BarComponent implements OnInit {
     // Draw the X-axis on the DOM
     this.svg.append("g")
       .attr("class", "x axis")
-      .attr("transform", "translate(0," + size.height + ")")
-      .call(d3.axisBottom(this.x))
+      .attr("transform", "translate(0," + -10 + ")")
+      .call(d3.axisTop(this.x).tickSize(null))
+      .call(g => g.select(".domain").remove())
+      .call(g => g.selectAll(".tick line").clone()
+        .attr("y2", (size.height+15))
+        .attr("stroke-opacity", 0.3))
       .selectAll("text")
-      .attr("transform", "translate(10,0)")
+      .attr("transform", "translate(10, -10)")
       .style("text-anchor", "end");
 
     // Draw the Y-axis on the DOM
