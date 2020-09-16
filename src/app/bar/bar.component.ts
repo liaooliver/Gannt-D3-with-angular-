@@ -9,12 +9,17 @@ import { DataSourceService } from '../data-source.service';
   styleUrls: ['./bar.component.scss']
 })
 export class BarComponent implements OnInit {
+  // https://observablehq.com/@d3/zoomable-area-chart?collection=@d3/d3-zoom
+  // https://bl.ocks.org/mbostock/431a331294d2b5ddd33f947cf4c81319
 
-  private svg;
+  private svg: d3.Selection<d3.BaseType, unknown, HTMLElement, any>;
+  private g;
   private x: d3.ScaleTime<number, number>
   private y: d3.ScaleBand<string>;
+  private xAxis;
+  private yAxis;
+  private zoom;
   private isFirst: boolean = true;
-  private isOpenBar: boolean = true;
 
   constructor(
     public _gantt: GanttService,
@@ -29,10 +34,9 @@ export class BarComponent implements OnInit {
   public initData(dataSet) {
     if (!dataSet) return;
 
-    const array = this.handleRecursive(dataSet)
-
+    const array = this.handleRecursive(dataSet);
     const size = {
-      margin: 50,
+      margin: 20,
       width: 1000,
       height: (array.length * 40)
     }
@@ -48,6 +52,7 @@ export class BarComponent implements OnInit {
 
   public renderSVG(array, size) {
     this.createSvg(size);
+    this.zoomed(size)
     this.drawBasic(array, size);
     this.drawAxis(size);
     this.drawBars(array)
@@ -60,7 +65,8 @@ export class BarComponent implements OnInit {
         let color: string;
         switch (data.type) {
           case 'order':
-            color = '#63b3ed';
+            // color = '#63b3ed';
+            color = '#03d3fc'
             break;
           case 'product':
             color = '#f6e05e';
@@ -86,7 +92,22 @@ export class BarComponent implements OnInit {
       .attr("width", size.width + (size.margin * 2))
       .attr("height", size.height + (size.margin * 2))
       .append("g")
-      .attr("transform", "translate(" + (size.margin + 30) + "," + size.margin + ")");
+      .attr("transform", "translate(" + size.margin + "," + size.margin*2 + ")");
+  }
+
+  public zoomed({ width, height }) {
+    const _this = this;
+    
+    d3.select("figure#bar svg")
+      .call(d3.zoom()
+        .scaleExtent([1, 3])
+        .translateExtent([[0, 0], [width, height]])
+        .on("zoom", function (event) {
+          var t = event['transform'], xt = t.rescaleX(_this.x);
+          d3.select('.x .axis').call(_this.xAxis.scale(xt))
+          console.log("zoom: ", event, "T", t, "XT", xt)
+        })
+    )
   }
 
   public drawBasic(data, size) {
@@ -100,16 +121,15 @@ export class BarComponent implements OnInit {
     this.x = d3.scaleTime()
       .domain([new Date(2020, 2, 1), new Date(2020, 7, 31)])
       .range([0, size.width]);
-
   }
 
   public drawAxis(size) {
     // Draw the X-axis on the DOM
-    this.svg.append("g")
+    this.xAxis = this.svg.append("g")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + -10 + ")")
       .call(d3.axisTop(this.x).tickSize(null))
-      .call(g => g.select(".domain").remove())
+      // .call(g => g.select(".domain").remove())
       .call(g => g.selectAll(".tick line").clone()
         .attr("y2", (size.height+15))
         .attr("stroke-opacity", 0.3))
@@ -117,17 +137,6 @@ export class BarComponent implements OnInit {
       .attr("transform", "translate(10, -10)")
       .style("text-anchor", "end");
 
-    // Draw the Y-axis on the DOM
-    // this.svg.append("g")
-    //   .attr("class", "y axis")
-    //   .call(d3.axisLeft(this.y));
-  }
-
-  public redrawAxis(size) {
-    // this.svg.select(".y.axis")
-    // .call(d3.axisLeft(this.y));
-    this.svg.select(".x.axis")
-      .call(d3.axisBottom(this.x))
   }
 
   private drawBars(data: any[]): void {
@@ -144,9 +153,7 @@ export class BarComponent implements OnInit {
       .attr("fill", "#d04a35");
 
     enter.append("rect")
-      .attr("x", (d) => {
-        return this.x(new Date(d.dates.start))
-      })
+      .attr("x", d => this.x(new Date(d.dates.start)))
       .attr("y", d => this.y(d.code))
       .attr("width", (d) => this.x(new Date(d.dates.end)) - this.x(new Date(d.dates.start)))
       .attr("height", this.y.bandwidth())

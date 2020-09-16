@@ -7,6 +7,7 @@ import { AppComponent } from './app.component';
 import { BarComponent } from './bar/bar.component';
 import { TreeNodeComponent } from './tree-node/tree-node.component';
 import { NodeItemComponent } from './node-item/node-item.component';
+import { ZoomableComponent } from './zoomable/zoomable.component';
 
 @NgModule({
   declarations: [
@@ -14,6 +15,7 @@ import { NodeItemComponent } from './node-item/node-item.component';
     BarComponent,
     TreeNodeComponent,
     NodeItemComponent,
+    ZoomableComponent,
   ],
   imports: [
     BrowserModule,
