@@ -1,4 +1,5 @@
-import { Component, OnInit, ɵCompiler_compileModuleSync__POST_R3__ } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { debounceTime } from 'rxjs/operators';
 import * as d3 from 'd3';
 import { GanttService } from '../gantt.service';
 import { DataSourceService } from '../data-source.service';
@@ -11,27 +12,29 @@ import { DataSourceService } from '../data-source.service';
 export class BarComponent implements OnInit {
   // https://observablehq.com/@d3/zoomable-area-chart?collection=@d3/d3-zoom
   // https://bl.ocks.org/mbostock/431a331294d2b5ddd33f947cf4c81319
+  // http://bl.ocks.org/TBD/600b23e56545026ae6fda2905efa42ce
 
   private svg: d3.Selection<d3.BaseType, unknown, HTMLElement, any>;
-  private g;
+  private g: d3.Selection<d3.BaseType, unknown, HTMLElement, any>;
   private x: d3.ScaleTime<number, number>
   private y: d3.ScaleBand<string>;
   private xAxis: d3.Axis<any>;
-  private gGrid;
-  private zoom;
-  private update;
-  private enter;
-  private spanX;
-  private spanW;
-  private parser = d3.isoParse
+  private gGrid: d3.Selection<d3.BaseType, unknown, HTMLElement, any>;
+  private zoom: d3.ZoomBehavior<Element, unknown>;
+  private update: d3.Selection<d3.BaseType, any, d3.BaseType, unknown>;
+  private enter: d3.Selection<any, any, d3.BaseType, unknown>;
+  private spanX: (d: any) => number = (d) => this.x(this.parser(d.dates.start))
+  private spanW: (d: any) => number = (d) => this.x(this.parser(d.dates.end)) - this.x(this.parser(d.dates.start))
+  private parser: (dateString: string) => Date = d3.timeParse("%Y-%m-%dT%H:%M:%S.%LZ")
+  private tooltip;
   
-  private size = {
+  private isFirst: boolean = true;
+  private size: { [key: string]: number } = {
     margin: 20,
     width: 800,
     height: 300
   }
   
-  private isFirst: boolean = true;
 
   constructor(
     public _gantt: GanttService,
@@ -58,7 +61,6 @@ export class BarComponent implements OnInit {
     } else {
       d3.select('#bar').selectAll('svg').remove();
       this.renderSVG(array)
-      // this.drawBars(array)
     }
   }
 
@@ -68,32 +70,29 @@ export class BarComponent implements OnInit {
     this.svg = d3.select("figure#bar")
       .append("svg")
       .attr("width", this.size.width+ (this.size.margin * 2))
-      .attr("height", this.size.height + (this.size.margin * 2))
-    
+      .attr("height", this.size.height + (this.size.margin * 3))
+
     this.g = this.svg.append("g")
       .attr("transform", "translate(" + this.size.margin + "," + this.size.margin + ")");
     
     this.y = d3.scaleBand()
-      .rangeRound([0, this.size.height])
+      .range([0, this.size.height])
       .domain(data.map(d => d.code))
-      .padding(0.2);
+      .padding(0.3);
 
     this.x = d3.scaleTime()
       .domain([new Date(2020, 2, 1, 0o0, 0o0), new Date(2020, 10, 30, 23, 59)])
-      .rangeRound([0, this.size.width + (this.size.margin * 2)]);
-    
-    this.spanX = (d) => this.x(this.parser(d.dates.start))
-    this.spanW = (d) => this.x(this.parser(d.dates.end)) - this.x(this.parser(d.dates.start))
+      .range([0, this.size.width + (this.size.margin * 2)]);
     
     this.xAxis = d3.axisTop(this.x).tickSize(null)
 
     this.gGrid = this.g
-      .attr("transform", "translate(" + this.size.margin + "," + this.size.margin + ")");
+      .attr("transform", `translate(20, 20)`);
 
     this.grid(this.gGrid, this.x)
     
     this.zoom = d3.zoom()
-    .scaleExtent([1, 108])
+    .scaleExtent([1, 160])
     .translateExtent([[0, 0], [this.size.width+ (this.size.margin * 2), this.size.height]])
     .extent([[0, 0], [this.size.width+ (this.size.margin * 2), this.size.height]])
     .on("zoom", function (event) {
@@ -103,18 +102,19 @@ export class BarComponent implements OnInit {
     this.g.append("g")
       .attr('class', 'axis axis--x')
       .attr("transform", "translate(0, -8)")
+      .style("font-size", 13)
       .call(this.xAxis)
+      .call(g => g.select(".domain").remove())
     
     this.svg.call(this.zoom)
-    
     this.drawBars(data)
   }
 
   public zoomed(event) {
-    console.log(event)
-    
     var t = event.transform, xt = t.rescaleX(this.x)
-    this.g.select(".axis--x").call(this.xAxis.scale(xt))
+    this.g.select(".axis--x")
+      .call(this.xAxis.scale(xt))
+      .call(g => g.select(".domain").remove())
     this.gGrid.call(this.grid, xt, this)
     this.svg.selectAll("rect")
       .attr("x", (d) => t.applyX(this.spanX(d)))
@@ -140,8 +140,40 @@ export class BarComponent implements OnInit {
       .attr("x2", d => x(d)))
   }
 
+  private makeTooltip(dataSet): void {
+    this.tooltip = d3.select("#bar")
+    .append("div")
+      .style("position", "absolute")
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("border-width", "1px")
+      .style("border-radius", "5px")
+      .style("padding", "10px")
+      .html(`
+        <p>${dataSet.code}</p>
+        <p>Type: ${dataSet.type}</p>
+        <p>Lanuch period: ${this.timeFormat(dataSet.dates.start)} ~ ${this.timeFormat(dataSet.dates.end)}</p>
+      `);
+  }
+
+  public timeFormat(time): string {
+    const timeAll = new Date(time)
+    let Y, m, d, hh, mm;
+    Y = timeAll.getFullYear();
+    m = timeAll.getMonth()+1;
+    d = timeAll.getDate()
+    hh = timeAll.getHours()-8
+    mm = timeAll.getMinutes();
+    return `${Y}-${this.addZero(m)}-${this.addZero(d)} ${this.addZero(hh)}:${this.addZero(mm)}`
+  }
+
+  public addZero(value): string {
+    return value < 10 ? `0${value}`: value
+  }
+
   private drawBars(data: any[]): void {
-    console.log(data)
+    const _this = this;
+
     // Create and fill the bars
     this.update = this.g.selectAll('rect').data(data);
     this.enter = this.update.enter();
@@ -160,10 +192,28 @@ export class BarComponent implements OnInit {
       .attr("width", (d) => this.spanW(d))
       .attr("height", this.y.bandwidth())
       .attr("rx", 4)
-      .attr("fill", (d) => d.color);
+      .attr("fill", (d) => d.color)
+      .on("mouseover", function (d) {
+        _this.makeTooltip(d.target.__data__)
+        _this.tooltip
+          .style("top", (d.pageY + 10)+"px").style("left",(d.pageX + 10)+"px")
+      })
+      .on("mousemove", function (d) {
+        let delay = 100;
+        let timer = null;
+
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          _this.tooltip.style("top", (d.pageY + 10)+"px").style("left",(d.pageX + 10)+"px")
+        }, delay)
+      })
+      .on("mouseout", function () {
+        _this.tooltip.remove()
+      })
 
     exit.remove();
   }
+
 
 
 // --------------------- 資料整理 ------------------- //
