@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ɵCompiler_compileModuleSync__POST_R3__ } from '@angular/core';
 import * as d3 from 'd3';
 import { GanttService } from '../gantt.service';
 import { DataSourceService } from '../data-source.service';
@@ -19,6 +19,11 @@ export class BarComponent implements OnInit {
   private xAxis: d3.Axis<any>;
   private gGrid;
   private zoom;
+  private update;
+  private enter;
+  private spanX;
+  private spanW;
+  private parser = d3.isoParse
   
   private size = {
     margin: 20,
@@ -45,12 +50,15 @@ export class BarComponent implements OnInit {
 
     const array = this.handleRecursive(dataSet);
 
+    this.size.height = array.length * 40
+
     if (this.isFirst) {
       this.isFirst = !this.isFirst;
       this.renderSVG(array)
     } else {
       d3.select('#bar').selectAll('svg').remove();
       this.renderSVG(array)
+      // this.drawBars(array)
     }
   }
 
@@ -59,33 +67,35 @@ export class BarComponent implements OnInit {
 
     this.svg = d3.select("figure#bar")
       .append("svg")
-      .attr("width", this.size.width + (this.size.margin * 2))
+      .attr("width", this.size.width+ (this.size.margin * 2))
       .attr("height", this.size.height + (this.size.margin * 2))
     
     this.g = this.svg.append("g")
       .attr("transform", "translate(" + this.size.margin + "," + this.size.margin + ")");
     
     this.y = d3.scaleBand()
-      .range([0, this.size.height])
+      .rangeRound([0, this.size.height])
       .domain(data.map(d => d.code))
       .padding(0.2);
 
     this.x = d3.scaleTime()
-      .domain([new Date(2020, 2, 1), new Date(2020, 7, 31)])
-      .range([0, this.size.width]);
+      .domain([new Date(2020, 2, 1, 0o0, 0o0), new Date(2020, 10, 30, 23, 59)])
+      .rangeRound([0, this.size.width + (this.size.margin * 2)]);
+    
+    this.spanX = (d) => this.x(this.parser(d.dates.start))
+    this.spanW = (d) => this.x(this.parser(d.dates.end)) - this.x(this.parser(d.dates.start))
     
     this.xAxis = d3.axisTop(this.x).tickSize(null)
 
-    this.gGrid = this.svg
-      .append('g')
+    this.gGrid = this.g
       .attr("transform", "translate(" + this.size.margin + "," + this.size.margin + ")");
 
     this.grid(this.gGrid, this.x)
     
     this.zoom = d3.zoom()
-    .scaleExtent([1, 4])
-    .translateExtent([[0, 0], [this.size.width, this.size.height]])
-    .extent([[0, 0], [this.size.width, this.size.height]])
+    .scaleExtent([1, 108])
+    .translateExtent([[0, 0], [this.size.width+ (this.size.margin * 2), this.size.height]])
+    .extent([[0, 0], [this.size.width+ (this.size.margin * 2), this.size.height]])
     .on("zoom", function (event) {
       _this.zoomed(event)
     });
@@ -101,21 +111,26 @@ export class BarComponent implements OnInit {
   }
 
   public zoomed(event) {
-    var t = event.transform, xt = t.rescaleX(this.x);
+    console.log(event)
+    
+    var t = event.transform, xt = t.rescaleX(this.x)
     this.g.select(".axis--x").call(this.xAxis.scale(xt))
     this.gGrid.call(this.grid, xt, this)
+    this.svg.selectAll("rect")
+      .attr("x", (d) => t.applyX(this.spanX(d)))
+      .attr("width", (d) => t.k * this.spanW(d))
   }
 
   public grid(g, x, component = null) {
     const _this = this === null ? component : this;
     
-    g.attr("stroke", "currentColor")
-    .attr("stroke-opacity", 0.1)
-    .call(g => g
+    g.call(g => g
       .selectAll(".x")
       .data(x.ticks())
       .join(
         enter => enter.append("line")
+          .attr("stroke-opacity", 1)
+          .attr("stroke", "black")
           .attr("class", "x")
           .attr("y2", _this.size.height),
         update => update,
@@ -125,41 +140,26 @@ export class BarComponent implements OnInit {
       .attr("x2", d => x(d)))
   }
 
-
-  // public drawAxis(size) {
-  //   // Draw the X-axis on the DOM
-  //   this.xAxis = this.svg.append("g")
-  //     .attr("class", "x axis")
-  //     .attr("transform", "translate(0," + -10 + ")")
-  //     .call(d3.axisTop(this.x).tickSize(null))
-  //     // .call(g => g.select(".domain").remove())
-  //     .call(g => g.selectAll(".tick line").clone()
-  //       .attr("y2", (size.height+15))
-  //       .attr("stroke-opacity", 0.3))
-  //     .selectAll("text")
-  //     .attr("transform", "translate(10, -10)")
-  //     .style("text-anchor", "end");
-
-  // }
-
   private drawBars(data: any[]): void {
+    console.log(data)
     // Create and fill the bars
-    let bars = this.svg.selectAll('rect');
-    let update = bars.data(data);
-    let enter = update.enter();
-    let exit = update.exit();
+    this.update = this.g.selectAll('rect').data(data);
+    this.enter = this.update.enter();
+    let exit = this.update.exit();
 
-    update.attr("x", (d) => this.x(new Date(d.dates.start)))
+    this.update.attr("x", (d) => this.spanX(d))
       .attr("y", d => this.y(d.code))
-      .attr("width", (d) => this.x(new Date(d.dates.end)) - this.x(new Date(d.dates.start)))
+      .attr("width", (d) => this.spanW(d))
       .attr("height", this.y.bandwidth())
+      .attr("rx", 3)
       .attr("fill", "#d04a35");
 
-    enter.append("rect")
-      .attr("x", d => this.x(new Date(d.dates.start)))
-      .attr("y", d => this.y(d.code))
-      .attr("width", (d) => this.x(new Date(d.dates.end)) - this.x(new Date(d.dates.start)))
+    this.enter.append("rect")
+      .attr("x", (d) => this.spanX(d))
+      .attr("y", (d) => this.y(d.code))
+      .attr("width", (d) => this.spanW(d))
       .attr("height", this.y.bandwidth())
+      .attr("rx", 4)
       .attr("fill", (d) => d.color);
 
     exit.remove();

@@ -1,5 +1,5 @@
 <li>
-  <p style="padding: 10px 0; margin: 0;" (click)="isToggle($event ,dataSet)">{{dataSet.code}}</p>
+  <p style="padding: 10px 0; margin: 0;" (click)="isToggle($event ,dataSet)">{{dataSet.code}} {{ dataSet.dates.start | date:'shortDate'}} - {{ dataSet.dates.end | date:'shortDate'}}</p>
   <ul [hidden]="!isShow" *ngIf="dataSet && dataSet.tasks">
     <app-node-item *ngFor="let data of dataSet.tasks" [dataSet]="data" [closeAll]="isClose">
     </app-node-item>
