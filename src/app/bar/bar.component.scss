@@ -1,9 +1,36 @@
-.tooltip{
+::ng-deep .tooltip{
     position: absolute;
-    width: 120px;
-    height: 80px;
     padding: 10px;
-    background-color: green;
+    background-color: white;
+    border: 1px solid;
+    border-radius: 6px;
+    color: black;
+}
+
+::ng-deep .tooltip > * {
+    color: black;
+}
+
+::ng-deep .progress{
+    display: flex;
+    height: 1rem;
+    overflow: hidden;
+    font-size: 0.75rem;
+    background-color: #e9ecef;
+    border-radius: 0.25rem;
+}
+
+::ng-deep .progress-bar{
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -ms-flex-pack: center;
+    justify-content: center;
+    color: black;
+    text-align: center;
+    white-space: nowrap;
+    background-color: #007bff;
+    transition: width 0.6s ease;
 }
 
 .tick{
