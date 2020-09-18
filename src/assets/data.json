@@ -4,6 +4,7 @@
         "type": "order",
         "code": "RTY",
         "description": "ABC",
+        "progress": 10,
         "dates": {
             "start": "2020-05-01T05:00:00.000Z",
             "end": "2020-05-31T04:00:00.000Z"
@@ -16,6 +17,7 @@
                 "type": "product",
                 "code": "CODE002",
                 "description": "ABC",
+                "progress": 10,
                 "dates": {
                     "start": "2020-05-01T05:00:00.000Z",
                     "end": "2020-05-31T04:00:00.000Z"
@@ -27,6 +29,7 @@
                         "type": "job",
                         "code": "process2",
                         "description": "ABC",
+                        "progress": 10,
                         "status": 0,
                         "machine": "none",
                         "isFilled": 0,
@@ -47,6 +50,7 @@
         "type": "order",
         "code": "TEST",
         "description": "ABC",
+        "progress": 75,
         "dates": {
             "start": "2020-03-24T05:00:00.000Z",
             "end": "2020-10-30T04:00:00.000Z"
@@ -59,6 +63,7 @@
                 "type": "product",
                 "code": "CODE001",
                 "description": "ABC",
+                "progress": 75,
                 "dates": {
                     "start": "2020-03-24T05:00:00.000Z",
                     "end": "2020-10-30T04:00:00.000Z"
@@ -70,6 +75,7 @@
                         "type": "job",
                         "code": "process1",
                         "description": "ABC",
+                        "progress": 100,
                         "status": 0,
                         "machine": "none",
                         "isFilled": 0,
@@ -85,6 +91,7 @@
                         "type": "job",
                         "code": "process3",
                         "description": "ABC",
+                        "progress": 50,
                         "status": 0,
                         "machine": "none",
                         "isFilled": 0,
@@ -105,6 +112,7 @@
         "type": "order",
         "code": "JN-RY11",
         "description": "cable - line",
+        "progress": 16.6,
         "dates": {
             "start": "2020-04-24T00:00:00.000Z",
             "end": "2020-06-26T09:00:00.000Z"
@@ -117,6 +125,7 @@
                 "type": "product",
                 "code": "STR-37 ",
                 "description": "strander",
+                "progress": 100,
                 "dates": {
                     "start": "2020-04-24T00:00:00.000Z",
                     "end": "2020-05-10T05:00:00.000Z"
@@ -128,6 +137,7 @@
                         "type": "job",
                         "code": "process -1",
                         "description": "aaaa",
+                        "progress": 100,
                         "status": 0,
                         "machine": "none",
                         "isFilled": 0,
@@ -146,6 +156,7 @@
                 "type": "product",
                 "code": "ex - 2",
                 "description": "bbbbb",
+                "progress": 25,
                 "dates": {
                     "start": "2020-05-10T01:00:00.000Z",
                     "end": "2020-06-26T09:00:00.000Z"
@@ -157,6 +168,7 @@
                         "type": "job",
                         "code": "pro - 1",
                         "description": "FF",
+                        "progress": 25,
                         "status": 0,
                         "machine": "none",
                         "isFilled": 0,
