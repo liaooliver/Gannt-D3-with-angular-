@@ -1,0 +1,187 @@
+[
+    {
+        "id": "5e72e5bdfc501531",
+        "type": "order",
+        "code": "RTY",
+        "description": "ABC",
+        "progress": 10,
+        "dates": {
+            "start": "2020-05-01T05:00:00.000Z",
+            "end": "2020-05-31T04:00:00.000Z"
+        },
+        "createdTime": "2020-03-19T03:23:42.363Z",
+        "status": 0,
+        "tasks": [
+            {
+                "id": "5e72e5befc501531",
+                "type": "product",
+                "code": "CODE002",
+                "description": "ABC",
+                "progress": 10,
+                "dates": {
+                    "start": "2020-05-01T05:00:00.000Z",
+                    "end": "2020-05-31T04:00:00.000Z"
+                },
+                "status": 0,
+                "tasks": [
+                    {
+                        "id": "5e72e5bdfc50153",
+                        "type": "job",
+                        "code": "process2",
+                        "description": "ABC",
+                        "progress": 10,
+                        "status": 0,
+                        "machine": "none",
+                        "isFilled": 0,
+                        "dates": {
+                            "start": "2020-05-01T05:00:00.000Z",
+                            "end": "2020-05-31T04:00:00.000Z"
+                        },
+                        "createdTime": "2020-03-19T03:23:41.838Z",
+                        "pid": "5e72e5befc501531"
+                    }
+                ],
+                "oid": "5e72e5bdfc501531"
+            }
+        ]
+    },
+    {
+        "id": "5e72e5bdfc501531a502cb00",
+        "type": "order",
+        "code": "TEST",
+        "description": "ABC",
+        "progress": 75,
+        "dates": {
+            "start": "2020-03-24T05:00:00.000Z",
+            "end": "2020-10-30T04:00:00.000Z"
+        },
+        "createdTime": "2020-03-19T03:23:42.363Z",
+        "status": 0,
+        "tasks": [
+            {
+                "id": "5e72e5befc501531a502cb04",
+                "type": "product",
+                "code": "CODE001",
+                "description": "ABC",
+                "progress": 75,
+                "dates": {
+                    "start": "2020-03-24T05:00:00.000Z",
+                    "end": "2020-10-30T04:00:00.000Z"
+                },
+                "status": 0,
+                "tasks": [
+                    {
+                        "id": "5e72e5bdfc501531a502cb01",
+                        "type": "job",
+                        "code": "process1",
+                        "description": "ABC",
+                        "progress": 100,
+                        "status": 0,
+                        "machine": "none",
+                        "isFilled": 0,
+                        "dates": {
+                            "start": "2020-03-24T05:00:00.000Z",
+                            "end": "2020-04-01T04:00:00.000Z"
+                        },
+                        "createdTime": "2020-03-19T03:23:41.838Z",
+                        "pid": "5e72e5befc501531a502cb04"
+                    },
+                    {
+                        "id": "5e72e5bdfc501531a502cb02",
+                        "type": "job",
+                        "code": "process3",
+                        "description": "ABC",
+                        "progress": 50,
+                        "status": 0,
+                        "machine": "none",
+                        "isFilled": 0,
+                        "dates": {
+                            "start": "2020-04-01T03:00:00.000Z",
+                            "end": "2020-10-30T04:00:00.000Z"
+                        },
+                        "createdTime": "2020-03-19T03:23:41.838Z",
+                        "pid": "5e72e5befc501531a502cb04"
+                    }
+                ],
+                "oid": "5e72e5bdfc501531a502cb00"
+            }
+        ]
+    },
+    {
+        "id": "5ef14c4ad068950e5742c11f",
+        "type": "order",
+        "code": "JN-RY11",
+        "description": "cable - line",
+        "progress": 16.6,
+        "dates": {
+            "start": "2020-04-24T00:00:00.000Z",
+            "end": "2020-06-26T09:00:00.000Z"
+        },
+        "createdTime": "2020-06-23T00:26:51.589Z",
+        "status": 0,
+        "tasks": [
+            {
+                "id": "5ef14c4bd068950e5742c122",
+                "type": "product",
+                "code": "STR-37 ",
+                "description": "strander",
+                "progress": 100,
+                "dates": {
+                    "start": "2020-04-24T00:00:00.000Z",
+                    "end": "2020-05-10T05:00:00.000Z"
+                },
+                "status": 0,
+                "tasks": [
+                    {
+                        "id": "5ef14c4ad068950e5742c120",
+                        "type": "job",
+                        "code": "process -1",
+                        "description": "aaaa",
+                        "progress": 100,
+                        "status": 0,
+                        "machine": "none",
+                        "isFilled": 0,
+                        "dates": {
+                            "start": "2020-04-24T00:00:00.000Z",
+                            "end": "2020-05-10T05:00:00.000Z"
+                        },
+                        "createdTime": "2020-06-23T00:26:50.994Z",
+                        "pid": "5ef14c4bd068950e5742c122"
+                    }
+                ],
+                "oid": "5ef14c4ad068950e5742c11f"
+            },
+            {
+                "id": "5ef14c4bd068950e5742c123",
+                "type": "product",
+                "code": "ex - 2",
+                "description": "bbbbb",
+                "progress": 25,
+                "dates": {
+                    "start": "2020-05-10T01:00:00.000Z",
+                    "end": "2020-06-26T09:00:00.000Z"
+                },
+                "status": 0,
+                "tasks": [
+                    {
+                        "id": "5ef14c4ad068950e5742c121",
+                        "type": "job",
+                        "code": "pro - 1",
+                        "description": "FF",
+                        "progress": 25,
+                        "status": 0,
+                        "machine": "none",
+                        "isFilled": 0,
+                        "dates": {
+                            "start": "2020-05-10T01:00:00.000Z",
+                            "end": "2020-06-26T09:00:00.000Z"
+                        },
+                        "createdTime": "2020-06-23T00:26:50.994Z",
+                        "pid": "5ef14c4bd068950e5742c123"
+                    }
+                ],
+                "oid": "5ef14c4ad068950e5742c11f"
+            }
+        ]
+    }
+]
