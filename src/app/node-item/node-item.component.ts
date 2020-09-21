@@ -32,12 +32,11 @@ export class NodeItemComponent implements OnInit, OnChanges {
     event.stopPropagation();
     
     if (!dataSet['tasks']) return;
-    
+
     this.isShow = !this.isShow;
     this.isClose = false;
 
     if (this.isShow) {
-      
       let newResult = []
       const tasks = JSON.stringify(dataSet['tasks'])
       let newTasks = JSON.parse(tasks);
@@ -77,7 +76,6 @@ export class NodeItemComponent implements OnInit, OnChanges {
       this._source.data_center$.next(newResult)
     } else {
       let newResult = []
-      
       switch (dataSet.type) {
         case 'order':
           this.isClose = true;
@@ -108,8 +106,5 @@ export class NodeItemComponent implements OnInit, OnChanges {
       console.log("減少 ", newResult)
       this._source.data_center$.next(newResult)
     }
-
-
   }
-
 }

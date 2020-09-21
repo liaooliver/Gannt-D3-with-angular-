@@ -27,12 +27,11 @@ export class BarComponent implements OnInit {
   private spanX: (d: any) => number = (d) => this.x(this.parser(d.dates.start))
   private spanW: (d: any) => number = (d) => this.x(this.parser(d.dates.end)) - this.x(this.parser(d.dates.start))
   private parser: (dateString: string) => Date = d3.timeParse("%Y-%m-%dT%H:%M:%S.%LZ")
-  private drag;
   
   private isFirst: boolean = true;
   private size: { [key: string]: number } = {
-    margin: 20,
-    width: 800,
+    margin: 10,
+    width: window.innerWidth*0.6,
     height: 300
   }
   
@@ -48,7 +47,7 @@ export class BarComponent implements OnInit {
     })
   }
 
-  public initData(dataSet) {
+  public initData(dataSet): void {
     if (!dataSet) return;
 
     const array = this.handleRecursive(dataSet);
@@ -66,30 +65,40 @@ export class BarComponent implements OnInit {
   public renderSVG(data): void {
     const _this = this;
 
+    // draw SVG size
     this.svg = d3.select("figure#bar")
       .append("svg")
-      .attr("width", this.size.width+ (this.size.margin * 2))
+      .attr("width", this.size.width + (this.size.margin * 2))
       .attr("height", this.size.height + (this.size.margin * 3))
 
+    // g is svg element container
     this.g = this.svg.append("g")
       .attr("transform", "translate(" + this.size.margin + "," + this.size.margin + ")");
     
+    // y scale
     this.y = d3.scaleBand()
       .range([0, this.size.height])
       .domain(data.map(d => d.code))
       .padding(0.3);
 
+    // x time scale
     this.x = d3.scaleTime()
       .domain([new Date(2020, 2, 1, 0o0, 0o0), new Date(2020, 10, 30, 23, 59)])
       .range([0, this.size.width + (this.size.margin * 2)]);    
     
-    this.xAxis = d3.axisTop(this.x).tickSize(null)
+    // make x axis
+    this.xAxis = d3
+      .axisTop(this.x)
+      .tickSize(null)
 
+    // make Grid container
     this.gGrid = this.g
       .attr("transform", `translate(20, 20)`);
 
+    // make Grid
     this.grid(this.gGrid, this.x)
     
+    // make X axis
     this.g.append("g")
       .attr('class', 'axis axis--x')
       .attr("transform", "translate(0, -8)")
@@ -102,18 +111,17 @@ export class BarComponent implements OnInit {
     this.drawBars(data);
   }
 
-  public grid(g, x, component = null) {
+  public grid(g, x, component = null): void {
     const _this = this === null ? component : this;
-    const setOrder = d3.descending;
-    const xGrid = d3.selectAll('.x');
 
-    g.call(g => g.selectAll(".x")
+    g.call(g => g.selectAll(".x-grid")
       .data(x.ticks())
       .join(
         enter => enter.append("line")
           .attr("stroke-opacity", 1)
           .attr("stroke", "white")
-          .attr("class", "x")
+          .attr('sort', _this.x)
+          .attr("class", "x-grid")
           .attr("y2", _this.size.height),
         update => update,
         exit => exit.remove()
@@ -121,13 +129,17 @@ export class BarComponent implements OnInit {
       .attr("x1", d => x(d))
       .attr("x2", d => x(d)))
     
-    // 排序 svg 元素做 z-index
-    xGrid.sort(setOrder)
+    /**
+     * sort svg element for z-index: The earlier the svg element, the lower the weight
+     * sort way , descending 
+    */ 
+    g.selectAll('.x-grid').sort(d3.descending)
   }
 
   private drawBars(data: any[]): void {
     const _this = this;
 
+    // D3.js data join
     this.update = this.g.selectAll('rect').data(data);
     this.enter = this.update.enter();
     let exit = this.update.exit();
@@ -136,7 +148,7 @@ export class BarComponent implements OnInit {
       .attr("y", d => this.y(d.code))
       .attr("width", (d) => this.spanW(d))
       .attr("height", this.y.bandwidth())
-      .attr("rx", 3)
+      .attr("rx", 5)
       .attr("fill", "#d04a35");
 
     this.enter.append("rect")
@@ -144,9 +156,10 @@ export class BarComponent implements OnInit {
       .attr("y", (d) => this.y(d.code))
       .attr("width", (d) => this.spanW(d))
       .attr("height", this.y.bandwidth())
-      .attr("rx", 4)
+      .attr("rx", 5)
       .attr("fill", (d) => d.color)
       .on("mouseover", function (d) {
+        // create tooltip
         _this.makeTooltip(d.target.__data__)
         _this.tooltip
           .style("top", (d.pageY + 10)+"px").style("left",(d.pageX + 10)+"px")
@@ -155,19 +168,22 @@ export class BarComponent implements OnInit {
         let delay = 100;
         let timer = null;
 
+        // debounce function
         clearTimeout(timer);
         timer = setTimeout(() => {
+          // follow cursor position
           _this.tooltip.style("top", (d.pageY + 10)+"px").style("left",(d.pageX + 10)+"px")
         }, delay)
       })
       .on("mouseout", function () {
+        // remove tooltip
         _this.tooltip.remove()
       })
 
     exit.remove();
   }
 
-// --------------------- 縮放行為 ------------------- //
+// --------------------- Zoom behavior ------------------- //
   private makeZoom(): void {
     const _this = this;
 
@@ -180,9 +196,14 @@ export class BarComponent implements OnInit {
     });
   }
 
-  public zoomed(event) {
+  public zoomed(event): void {
+    // https://github.com/d3/d3-zoom#zoom-transforms
     var t = event.transform, xt = t.rescaleX(this.x)
-
+    /**
+     * transform.x - the translation amount tx along the x-axis.
+     * transform.y - the translation amount ty along the y-axis.
+     * transform.k - the scale factor k.
+    */
     this.gGrid.call(this.grid, xt, this)
     this.g.select(".axis--x")
       .call(this.xAxis.scale(xt))
@@ -191,7 +212,7 @@ export class BarComponent implements OnInit {
       .attr("x", (d) => t.applyX(this.spanX(d)))
       .attr("width", (d) => t.k * this.spanW(d))
   }
-// --------------------- 提示框 ------------------- //
+// --------------------- tooltip ------------------- //
   private makeTooltip(dataSet): void {
     this.tooltip = d3.select("#bar")
     .append("div")
@@ -207,7 +228,7 @@ export class BarComponent implements OnInit {
       `);
   }
 
-// --------------------- 時間格式 ------------------- //
+// --------------- convert time format ------------ //
   public timeFormat(time): string {
     const timeAll = new Date(time)
     let Y, m, d, hh, mm;
@@ -223,7 +244,7 @@ export class BarComponent implements OnInit {
     return value < 10 ? `0${value}`: value
   }
   
-// --------------------- 資料整理 ------------------- //
+// ----------------- handle data ------------------ //
   public handleRecursive(dataSet) {
     const array = []
     const recursive = function (dataSet) {
@@ -231,7 +252,6 @@ export class BarComponent implements OnInit {
         let color: string;
         switch (data.type) {
           case 'order':
-            // color = '#63b3ed';
             color = '#03d3fc'
             break;
           case 'product':

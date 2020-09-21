@@ -35,5 +35,4 @@ export class TreeNodeComponent implements OnInit {
       this._source.data_center$.next(filterData)
     })
   }
-
 }
