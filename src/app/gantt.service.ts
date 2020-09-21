@@ -10,6 +10,6 @@ export class GanttService {
 
   getAPI() {
     // return this._http.get('http://10.101.100.112:3789/order/list_orders')
-    return this._http.get('../assets/data.json')
+    return this._http.get('https://liaooliver.github.io/Gannt-D3-with-angular-/assets/data.json')
   }
 }
